@@ -9,7 +9,17 @@
   - json
 
 # How to run
+## Musical feature extraction from MIDI file:
+- Parse the selected MIDI file as follows:
+  ```python
+  python music-preprocessing.py "MIDIFILENAME.mid"
+  ```
+- Feature extraction from the previously parsed MIDI:
+  ```python
+  python fromJSON2Features.py "PRODUCED_JSON.json"
+  ```
 
+## Netlogo side:
 - Start the NetLogo simulation by opening the "code/NetLogo/SI-dance.nlogo" model;
 - Choose the musical track by entering the relative path of the MIDI file in the input component called "MIDI_file" in the GUI; for example, "MIDI/Fur_Elise_Easy_Piano.mid";
 - Click the 'Setup' button and then the 'Go' button to actually start the simulation.
