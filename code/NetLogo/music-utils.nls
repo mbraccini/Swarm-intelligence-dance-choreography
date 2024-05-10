@@ -1,0 +1,104 @@
+extensions [sound]
+
+globals
+[
+  tick-duration
+  not-played
+  melody
+  clock
+  tempo
+  bpm
+  volume
+  melody-length
+]
+
+to music-utils-setup
+  set bpm 120
+  set volume 64
+  set not-played TRUE
+  set tick-duration 4 ; Imposta la durata del tick a 0.1 secondi
+  set melody-length 20
+end
+
+to go-music-utils-subroutine
+  if not-played; per eseguirlo solo la prima volta
+  [
+    create-rnd-melody
+    play-in-background
+    set not-played FALSE
+  ]
+end
+
+to play-in-background
+  ;let midi-file "per_elisa.mid" ; Sostituisci con il percorso al tuo file MIDI
+ ;foreach melody [
+  ;  note ->
+  ;  sound:play-note-later clock "Acoustic Grand Piano" note 64 1
+   ; set clock clock + 1
+  ;]
+  set clock 0
+  let i 0
+  while [i < melody-length]
+  [
+    let note item i melody
+    let drtn item i tempo
+    play-a-note note clock drtn
+    set clock clock + drtn
+    set i i + 1
+  ]
+
+end
+
+to create-rnd-melody
+  set melody generate-random-melody 60 71
+  ;set tempo generate-random-durations 10 1 2
+  set tempo generate-random-tempo
+  ;print time
+end
+
+to play-a-note [note clck duration]
+  sound:play-note-later clck "Acoustic Grand Piano" (note) (volume * 2) duration
+end
+
+to-report generate-random-melody [min-value max-value]
+  report n-values melody-length [random (max-value - min-value + 1) + min-value]
+end
+
+to-report generate-random-tempo
+  let i 0
+  let my-list []
+  let drtn -1
+  while [i < melody-length]
+  [
+    let rnd random (4) + 1
+    ifelse rnd = 1
+    [
+      set drtn whole
+    ]
+    [
+      ifelse rnd = 2
+      [
+        set drtn half
+      ]
+      [
+        ifelse rnd = 3
+        [
+          set drtn quarter
+        ]
+        [
+          ;rnd = 4
+          set drtn eighth
+        ]
+      ]
+    ]
+    set my-list lput drtn my-list
+    set i i + 1
+  ]
+  report my-list
+
+end
+
+to-report whole   report 240 / bpm end
+to-report half    report 120 / bpm end
+to-report quarter report  60 / bpm end
+to-report eighth  report  30 / bpm end

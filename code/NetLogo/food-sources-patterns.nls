@@ -1,0 +1,185 @@
+; normalize the patches' values between 0 and 1
+to normalize-patches
+
+  let min-val min [val] of patches
+  let max-val max [val] of patches
+  ; normalize the values to be between 0 and 1
+  ask patches [ set val (val - min-val) / (max-val - min-val)  ]
+
+
+  ;;ask patches [set plabel ""]
+  ;;ask patches [ set pcolor scale-color red val 0.0 1.0]
+
+  if testing-patches?
+  [
+    ask patches with [val > 0] [set plabel val]
+  ]
+end
+
+; COLORA LE PATCH SECONDO IL LORO VALORE "val"
+to visualize-patches
+  if visualize-dance-floor
+  [
+    ask patches [ set pcolor scale-color red val 0.0 1.0]
+  ]
+end
+
+
+; SOMMA DI MATRICI PER FARE IL FADE TRA DUE PATTERN DI FOOD SOURCES
+to-report sum-of-matrices [m1 m2 ncols alpha]
+  let matrix []
+  let rows ncols
+  let columns ncols
+
+  foreach (range 0 ncols ) [ i ->
+    let row []
+    foreach (range 0 ncols ) [ j ->
+      let m1_val item j item i m1
+      let m2_val item j item i m2
+      let value (alpha * m1_val) + (1 - alpha) * m2_val
+      set row lput value row
+    ]
+    set matrix lput row matrix
+  ]
+  ;show matrix
+  report matrix
+end
+
+; RECUPERA IL PATTERN SOTTO FORMA DI LISTA DI LISTE (i.e., una matrice) DAI VALORI PRESENTI NELLE PATCH
+to-report retrieve-patches-matrix [ncols]
+  let matrix []
+  let rows ncols
+  let columns ncols
+
+  foreach (range 0 ncols ) [ i ->
+    let row []
+    foreach (range 0 ncols ) [ j ->
+      let value [val] of patch i j
+      set row lput value row
+    ]
+    set matrix lput row matrix
+  ]
+
+  ;repeat rows [
+  ;  let row []
+  ;  repeat columns [ set row lput 0 row ]
+  ;  set matrix lput row matrix
+  ;]
+  ;show matrix
+  report matrix
+end
+
+; SETTA I VALORI PRESENTI NEL PARAMETRO patt aSULLA GRIGLIA DI PATCH
+to set-pattern-to-grid [patt ncols]
+  foreach (range 0 ncols ) [ i ->
+    foreach (range 0 ncols ) [ j ->
+      let valore-patch item j item i patt
+      ask patch i j [ set val valore-patch ]
+    ]
+  ]
+end
+
+; INIZIALIZZA TUTTI I PATTERN E RESTITUISCE LA LISTA DI TUTTI I POSSIBILI PATTERN DI FOOD SOURCES
+to-report initialize_patterns [patches-list ncols]
+  let patterns-variables-list []
+  ;run function_name
+  ;normalize-patches
+  let num-of-patterns length patches-list
+  let indice 0
+
+  repeat num-of-patterns [
+    ask patches [ set val 0]
+
+    let fun item indice patches-list
+    run fun
+    normalize-patches
+    let pattern retrieve-patches-matrix grid_ncols
+    ;print pattern
+    set patterns-variables-list lput pattern patterns-variables-list
+   set indice indice + 1
+]
+  ;print patterns-variables-list
+   ask patches [ set val 0]
+  report patterns-variables-list
+end
+
+; INIZIALIZZA IL MONDO, SETTA LA DIMENSIONE DELLA GRIGLIA E DELLE PATCH CHE LA COMPONGONO
+to initialize-world 
+  let gridSize 6
+  set grid_ncols (2 ^ gridSize)
+  resize-world 0 (grid_ncols - 1) 0 (grid_ncols - 1)
+  set-patch-size 500 / grid_ncols
+end
+
+
+; CREAZIONE DEL PATTERN DI RUMORE DA APPLICARE SU TUTTO IL WORLD, LA GRIGLIA DI PATCH
+to initialize-rnd-noise-on-the-world
+  ask patches [ set val 0]
+  ask patches [ set val random-float max-patch-noise-val ]
+  set noise-on-world retrieve-patches-matrix grid_ncols
+  ask patches [ set val 0]
+end
+
+to circles-2
+  if food-sources-patterns-noise?
+  [
+    set-pattern-to-grid noise-on-world grid_ncols
+  ]
+
+  ask patch  16  32   [set val max-patch-val ]
+  ask patch  46  32   [set val max-patch-val ]
+
+  repeat food-source-diffusion-repetitions [ diffuse val food-source-diffusion-val ]
+end
+
+
+to circles-3
+  if food-sources-patterns-noise?
+  [
+    set-pattern-to-grid noise-on-world grid_ncols
+  ]
+  ask patch 32 46    [set val max-patch-val ]
+  ask patch 16 20    [set val max-patch-val ]
+  ask patch 46 20    [set val max-patch-val ]
+
+  repeat food-source-diffusion-repetitions [ diffuse val food-source-diffusion-val ]
+end
+
+to circles-4
+  if food-sources-patterns-noise?
+  [
+    set-pattern-to-grid noise-on-world grid_ncols
+  ]
+  ask patch  12  32   [set val max-patch-val ]
+  ask patch  50  32   [set val max-patch-val ]
+  ask patch  32  50   [set val max-patch-val ]
+  ask patch  32  12   [set val max-patch-val ]
+
+  repeat food-source-diffusion-repetitions [ diffuse val food-source-diffusion-val ]
+end
+
+to up-down-2-1
+  if food-sources-patterns-noise?
+  [
+    set-pattern-to-grid noise-on-world grid_ncols
+  ]
+  ask patch  12  50   [set val max-patch-val ]
+  ask patch  50  50   [set val max-patch-val ]
+  ;ask patch  32  50  [set val 1 ]
+  ask patch  32  12   [set val max-patch-val ]
+
+  repeat food-source-diffusion-repetitions [ diffuse val food-source-diffusion-val ]
+end
+
+to up-down-1-2
+  if food-sources-patterns-noise?
+  [
+    set-pattern-to-grid noise-on-world grid_ncols
+  ]
+
+  ask patch  32  50   [set val max-patch-val ]
+  ask patch  12  12   [set val max-patch-val ]
+  ask patch  50  12   [set val max-patch-val ]
+
+  repeat food-source-diffusion-repetitions [ diffuse val food-source-diffusion-val ]
+end

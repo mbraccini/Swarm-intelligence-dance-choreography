@@ -1,0 +1,65 @@
+extensions [py]
+
+globals
+[
+  every-python-ticks-duration
+  python-bpm
+  python-music-playing
+  python-music-not-played
+]
+
+
+
+to music-python-setup
+  if python-music-not-played = FALSE
+  [
+    end-python-music
+  ]
+  py:setup "/Users/mbraccini/micromamba/envs/datascience/bin/python"
+  py:run "import pygame"
+  ; Pass the NetLogo variable value to Python
+  ;;;;; MIDI FILENAME IMPORT - START
+  let MIDIfilenameForPython word "\"" MIDI_file
+  set MIDIfilenameForPython word MIDIfilenameForPython "\""
+  let python-set-variable-MIDI-filename (word "midi_filename = " MIDIfilenameForPython)
+  py:run python-set-variable-MIDI-filename
+  ;;;;; MIDI FILENAME IMPORT - END
+  
+  
+  set python-music-not-played TRUE
+  
+  set python-bpm 163
+  let duration 60 / python-bpm
+  let noMovementsPerBar 4
+  let res duration * noMovementsPerBar
+  print res
+  set every-python-ticks-duration res ; Imposta la durata del tick a 0.1 secondi
+end
+
+to play-python-music ; make sure everything is ready to go!  
+  if python-music-not-played; per eseguirlo solo la prima volta
+  [
+    ;py:run "midi_filename = 'Beethoven.mid'"
+  
+    py:run "freq = 44100"
+    py:run "bitsize = -16"
+    py:run "channels = 2"
+    py:run "buffer = 1024"
+    py:run "pygame.mixer.init(freq, bitsize, channels, buffer)"
+    py:run "pygame.mixer.music.set_volume(1)"
+    
+    py:run "clock = pygame.time.Clock()"
+    py:run "pygame.mixer.music.load(midi_filename)"
+    py:run "pygame.mixer.music.play()"
+    
+    set python-music-not-played FALSE
+  ]
+
+end
+
+to end-python-music
+  py:run "pygame.mixer.music.fadeout(1000)"
+  py:run "pygame.mixer.music.stop()"
+end
+
+
